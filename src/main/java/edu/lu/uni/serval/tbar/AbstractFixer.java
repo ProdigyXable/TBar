@@ -1,18 +1,5 @@
 package edu.lu.uni.serval.tbar;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.lang3.math.NumberUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.lu.uni.serval.entity.Pair;
 import edu.lu.uni.serval.jdt.tree.ITree;
 import edu.lu.uni.serval.tbar.code.analyser.JavaCodeFileParser;
@@ -27,6 +14,17 @@ import edu.lu.uni.serval.tbar.utils.ShellUtils;
 import edu.lu.uni.serval.tbar.utils.SuspiciousCodeParser;
 import edu.lu.uni.serval.tbar.utils.SuspiciousPosition;
 import edu.lu.uni.serval.tbar.utils.TestUtils;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract Fixer.
@@ -242,12 +240,18 @@ public abstract class AbstractFixer implements IFixer {
 		for (Patch patch : patchCandidates) {
 			patch.buggyFileName = scn.suspiciousJavaFile;
 			addPatchCodeToFile(scn, patch);// Insert the patch.
-			if (this.triedPatchCandidates.contains(patch)) continue;
+			if (this.triedPatchCandidates.contains(patch)) {
+                            continue;
+                        }
+                        
 			patchId++;
 			this.triedPatchCandidates.add(patch);
 			
 			String buggyCode = patch.getBuggyCodeStr();
-			if ("===StringIndexOutOfBoundsException===".equals(buggyCode)) continue;
+			if ("===StringIndexOutOfBoundsException===".equals(buggyCode)) {
+                            continue;
+                        }
+                        
 			String patchCode = patch.getFixedCodeStr1();
 			scn.targetClassFile.delete();
 

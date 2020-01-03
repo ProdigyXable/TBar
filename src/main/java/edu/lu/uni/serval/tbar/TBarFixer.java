@@ -1,18 +1,8 @@
 package edu.lu.uni.serval.tbar;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.lu.uni.serval.jdt.tree.ITree;
 import edu.lu.uni.serval.tbar.config.Configuration;
 import edu.lu.uni.serval.tbar.context.ContextReader;
-import edu.lu.uni.serval.tbar.fixpatterns.CNIdiomNoSuperCall;
 import edu.lu.uni.serval.tbar.fixpatterns.ClassCastChecker;
 import edu.lu.uni.serval.tbar.fixpatterns.ConditionalExpressionMutator;
 import edu.lu.uni.serval.tbar.fixpatterns.DataTypeReplacer;
@@ -33,6 +23,13 @@ import edu.lu.uni.serval.tbar.info.Patch;
 import edu.lu.uni.serval.tbar.utils.Checker;
 import edu.lu.uni.serval.tbar.utils.FileHelper;
 import edu.lu.uni.serval.tbar.utils.SuspiciousPosition;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -88,7 +85,12 @@ public class TBarFixer extends AbstractFixer {
 
 			for (SuspCodeNode scn : scns) {
 //				log.debug(scn.suspCodeStr);
-				if (triedSuspNode.contains(scn)) continue;
+				if (triedSuspNode.contains(scn)) {
+                                    continue;
+                                }
+                                
+                                log.info(String.format("--- Attempting to fix %s %d ---", scn.suspiciousJavaFile, scn.buggyLine));
+                                
 				triedSuspNode.add(scn);
 				
 				// Parse context information of the suspicious code.
@@ -440,7 +442,10 @@ public class TBarFixer extends AbstractFixer {
 //		System.out.println(dataType + " ====== " + patchCandidates.size());
 		
 		// Test generated patches.
-		if (patchCandidates.isEmpty()) return;
+		if (patchCandidates.isEmpty()) {
+                    return;
+                }
+                
 		testGeneratedPatches(patchCandidates, scn);
 	}
 	
