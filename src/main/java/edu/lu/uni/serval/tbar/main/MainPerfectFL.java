@@ -1,11 +1,10 @@
 package edu.lu.uni.serval.tbar.main;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.lu.uni.serval.tbar.TBarFixer;
 import edu.lu.uni.serval.tbar.TBarFixer.Granularity;
 import edu.lu.uni.serval.tbar.config.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Fix bugs with the known bug positions.
@@ -44,11 +43,11 @@ public class MainPerfectFL {
 //			System.out.println("Last argument must be l, L, line, or Line, f, F, file, or File.");
 //			System.exit(0);
 		}
-		fixBug(bugDataPath, defects4jHome, bugId, isTestFixPatterns);
+		fixBug(bugDataPath, defects4jHome, bugId, isTestFixPatterns, args[3], args[4], args[5]);
 	}
 
-	public static void fixBug(String bugDataPath, String defects4jHome, String bugIdStr, boolean isTestFixPatterns) {
-		String[] elements = bugIdStr.split("_");
+	public static void fixBug(String bugDataPath, String defects4jHome, String bugIdStr, boolean isTestFixPatterns, String pm, String pt, String pf) {
+		String[] elements = bugIdStr.split("-");
 		String projectName = elements[0];
 		int bugId;
 		try {
@@ -58,7 +57,7 @@ public class MainPerfectFL {
 			return;
 		}
 		
-		TBarFixer fixer = new TBarFixer(bugDataPath, projectName, bugId, defects4jHome); 
+		TBarFixer fixer = new TBarFixer(bugDataPath, projectName, bugId, defects4jHome, pm, pt, pf); 
 		fixer.dataType = "TBar";
 		fixer.isTestFixPatterns = isTestFixPatterns;
 		switch (granularity) {

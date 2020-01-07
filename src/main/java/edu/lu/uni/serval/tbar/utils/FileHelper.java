@@ -201,6 +201,7 @@ public class FileHelper {
 		List<File> fileList = new ArrayList<>();
 		
 		if (!file.exists()) {
+                    System.out.println("File does not exist: " + file.getAbsolutePath());
 			return null;
 		}
 		
