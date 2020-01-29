@@ -8,88 +8,100 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Fix bugs with the known bug positions.
- * 
+ *
  * @author kui.liu
  *
  */
 public class MainPerfectFL {
-	
-	private static Logger log = LoggerFactory.getLogger(MainPerfectFL.class);
-	private static Granularity granularity = Granularity.File;
-	
-	public static void main(String[] args) {
-		if (args.length != 4) {
-			System.err.println("Arguments: \n"
-					+ "\t<Bug_Data_Path>: the directory of checking out Defects4J bugs. \n"
-					+ "\t<Bug_ID>: bug id of each Defects4J bug, such as Chart_1. \n"
-					+ "\t<defects4j_Home>: the directory of defects4j git repository.\n"
-					+ "\t<isTestFixPatterns>: true - try all fix patterns for each bug, false - perfect fault localization configuration.");
-			System.exit(0);
-		}
-		String bugDataPath = args[0];//"/Users/kui.liu/Public/Defects4JData/";//
-		String bugId = args[1]; //"Chart_1";// 
-		String defects4jHome = args[2];//"/Users/kui.liu/Public/git/defects4j/";//
-		boolean isTestFixPatterns = Boolean.valueOf(args[3]);//false;//
-		String granularityStr = "Line";
-		System.out.println(bugId);
-		if ("line".equalsIgnoreCase(granularityStr) || "l".equalsIgnoreCase(granularityStr)) {
-			granularity = Granularity.Line;
-			if (isTestFixPatterns) Configuration.outputPath += "FixPatterns/";
-			else Configuration.outputPath += "PerfectFL/";
+
+    private static Logger log = LoggerFactory.getLogger(MainPerfectFL.class);
+    private static Granularity granularity = Granularity.File;
+
+    public static void main(String[] args) {
+        if (args.length != 7) {
+            System.err.println("Arguments: \n"
+                    + "\t<Bug_Data_Path>: the directory of checking out Defects4J bugs. \n"
+                    + "\t<Bug_ID>: bug id of each Defects4J bug, such as Chart_1. \n"
+                    + "\t<defects4j_Home>: the directory of defects4j git repository.\n"
+                    + "\t<isTestFixPatterns>: true - try all fix patterns for each bug, false - perfect fault localization configuration.");
+            System.exit(0);
+        }
+        String bugDataPath = args[0];//"/Users/kui.liu/Public/Defects4JData/";//
+        String bugId = args[1]; //"Chart_1";// 
+        String defects4jHome = args[2];//"/Users/kui.liu/Public/git/defects4j/";//
+        boolean isTestFixPatterns = Boolean.valueOf(args[3]);//false;//
+        String granularityStr = "Line";
+        System.out.println(bugId);
+        if ("line".equalsIgnoreCase(granularityStr) || "l".equalsIgnoreCase(granularityStr)) {
+            granularity = Granularity.Line;
+            if (isTestFixPatterns) {
+                Configuration.outputPath += "FixPatterns/";
+            } else {
+                Configuration.outputPath += "PerfectFL/";
+            }
 //		} else if ("file".equalsIgnoreCase(granularityStr) || "f".equalsIgnoreCase(granularityStr)) {
 //			granularity = Granularity.File;
 //			Configuration.outputPath += "File/";
 //		} else {
 //			System.out.println("Last argument must be l, L, line, or Line, f, F, file, or File.");
 //			System.exit(0);
-		}
-		fixBug(bugDataPath, defects4jHome, bugId, isTestFixPatterns, args[3], args[4], args[5]);
-	}
+        }
+        fixBug(bugDataPath, defects4jHome, bugId, isTestFixPatterns, args[4], args[5], args[6]);
+    }
 
-	public static void fixBug(String bugDataPath, String defects4jHome, String bugIdStr, boolean isTestFixPatterns, String pm, String pt, String pf) {
-		String[] elements = bugIdStr.split("-");
-		String projectName = elements[0];
-		int bugId;
-		try {
-			bugId = Integer.valueOf(elements[1]);
-		} catch (NumberFormatException e) {
-			System.err.println("Please input correct buggy project ID, such as \"Chart_1\".");
-			return;
-		}
-		
-		TBarFixer fixer = new TBarFixer(bugDataPath, projectName, bugId, defects4jHome, pm, pt, pf); 
-		fixer.dataType = "TBar";
-		fixer.isTestFixPatterns = isTestFixPatterns;
-		switch (granularity) {
-		case Line:
-			fixer.granularity = Granularity.Line;
-			break;
-		case File:
-			fixer.granularity = Granularity.File;
-			break;
-		default:
-			return;
-		}
-		
-		if (Integer.MAX_VALUE == fixer.minErrorTest) {
-			System.out.println("Failed to defects4j compile bug " + bugIdStr);
-			return;
-		}
-		fixer.metric = Configuration.faultLocalizationMetric;
-		fixer.fixProcess();
-		
-		int fixedStatus = fixer.fixedStatus;
-		switch (fixedStatus) {
-		case 0:
-			log.info("=======Failed to fix bug " + bugIdStr);
-			break;
-		case 1:
-			log.info("=======Succeeded to fix bug " + bugIdStr);
-			break;
-		case 2:
-			log.info("=======Partial succeeded to fix bug " + bugIdStr);
-			break;
-		}
-	}
+    public static void fixBug(String bugDataPath, String defects4jHome, String bugIdStr, boolean isTestFixPatterns, String pm, String pt, String pf) {
+        String[] elements = bugIdStr.split("-");
+        String projectName = elements[0];
+        int bugId;
+        try {
+            bugId = Integer.valueOf(elements[1]);
+        } catch (NumberFormatException e) {
+            System.err.println("Please input correct buggy project ID, such as \"Chart_1\".");
+            return;
+        }
+
+        TBarFixer fixer = new TBarFixer(bugDataPath, projectName, bugId, defects4jHome, pm, pt, pf);
+
+        if (fixer.proflEnabled) {
+            fixer.saveGeneralSbfl();
+        }
+
+        fixer.dataType = "TBar";
+        fixer.isTestFixPatterns = isTestFixPatterns;
+        switch (granularity) {
+            case Line:
+                fixer.granularity = Granularity.Line;
+                break;
+            case File:
+                fixer.granularity = Granularity.File;
+                break;
+            default:
+                return;
+        }
+
+        if (Integer.MAX_VALUE == fixer.minErrorTest) {
+            System.out.println("Failed to defects4j compile bug " + bugIdStr);
+            return;
+        }
+        fixer.metric = Configuration.faultLocalizationMetric;
+        fixer.fixProcess();
+
+        if (fixer.proflEnabled) {
+            fixer.saveProflRanking();
+        }
+
+        int fixedStatus = fixer.fixedStatus;
+        switch (fixedStatus) {
+            case 0:
+                log.info("=======Failed to fix bug " + bugIdStr);
+                break;
+            case 1:
+                log.info("=======Succeeded to fix bug " + bugIdStr);
+                break;
+            case 2:
+                log.info("=======Partial succeeded to fix bug " + bugIdStr);
+                break;
+        }
+    }
 
 }

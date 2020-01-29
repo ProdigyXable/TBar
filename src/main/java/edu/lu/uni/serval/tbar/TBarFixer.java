@@ -90,7 +90,7 @@ public class TBarFixer extends AbstractFixer {
             }
 
             log.info(String.format("--- Looking at %s:%d ---", suspiciousCode.classPath, suspiciousCode.lineNumber));
-            
+
             for (SuspCodeNode scn : scns) {
 //				log.debug(scn.suspCodeStr);
                 if (triedSuspNode.contains(scn)) {

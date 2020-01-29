@@ -278,6 +278,7 @@ public abstract class AbstractFixer implements IFixer {
         // Testing generated patches.
         for (Patch patch : patchCandidates) {
             System.out.println("---------------- Testing New Patch ----------------");
+
             patch.buggyFileName = scn.suspiciousJavaFile;
             addPatchCodeToFile(scn, patch);// Insert the patch.
             if (this.triedPatchCandidates.contains(patch)) {
@@ -352,10 +353,11 @@ public abstract class AbstractFixer implements IFixer {
             failedTestsAfterFix.removeAll(this.fakeFailedTestCasesList);
 
             int errorTestAfterFix = failedTestsAfterFix.size();
-            log.info(String.format("Failed tests BEFORE patch = %d, %s", minErrorTest, this.failedTestCasesStrList.toString()));
+            log.info(String.format("Failed tests BEFORE patch = %d, %s", this.failedTestCasesStrList.size(), this.failedTestCasesStrList.toString()));
             log.info(String.format("Failed tests AFTER patch = %d, %s", errorTestAfterFix, failedTestsAfterFix.toString()));
             Collection<String> failPassTests = new ArrayList(failedTestCasesStrList);
 
+            // PROFL-SPECIFIC-START
             if (this.proflEnabled) {
                 int ff = 0;
                 int fp = 0;
@@ -396,7 +398,13 @@ public abstract class AbstractFixer implements IFixer {
 
                 if (mutatedMethod != null) {
                     Map<String, Double> m = new TreeMap();
-                    m.put(mutatedMethod, proflRanking.getGeneralMethodSusValues().get(mutatedMethod));
+                    Double sus = proflRanking.getGeneralMethodSusValues().get(mutatedMethod);
+
+                    if (sus == null) {
+                        sus = new Double(0);
+                    }
+
+                    m.put(mutatedMethod, sus);
 
                     if (fp > 0 && pf == 0) {
                         log.info("[ProFL] CleanFix found");
@@ -416,6 +424,7 @@ public abstract class AbstractFixer implements IFixer {
                 log.debug(String.format("Mutated = %s in %s:%d", mutatedMethod, qualifiedName, scn.buggyLine));
             }
 
+            // PROFL-SPECIFIC-END
             if (errorTestAfterFix < minErrorTest) {
                 List<String> tmpFailedTestsAfterFix = new ArrayList<>();
                 tmpFailedTestsAfterFix.addAll(failedTestsAfterFix);
