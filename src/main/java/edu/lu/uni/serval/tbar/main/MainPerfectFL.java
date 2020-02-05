@@ -1,11 +1,10 @@
 package edu.lu.uni.serval.tbar.main;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.lu.uni.serval.tbar.TBarFixer;
 import edu.lu.uni.serval.tbar.TBarFixer.Granularity;
 import edu.lu.uni.serval.tbar.config.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Fix bugs with the known bug positions.
@@ -48,7 +47,7 @@ public class MainPerfectFL {
 	}
 
 	public static void fixBug(String bugDataPath, String defects4jHome, String bugIdStr, boolean isTestFixPatterns) {
-		String[] elements = bugIdStr.split("_");
+		String[] elements = bugIdStr.split("-");
 		String projectName = elements[0];
 		int bugId;
 		try {

@@ -1,10 +1,9 @@
 package edu.lu.uni.serval.tbar.main;
 
-import java.io.File;
-
 import edu.lu.uni.serval.tbar.AbstractFixer;
 import edu.lu.uni.serval.tbar.TBarFixer;
 import edu.lu.uni.serval.tbar.config.Configuration;
+import java.io.File;
 
 /**
  * Fix bugs with Fault Localization results.
@@ -35,7 +34,7 @@ public class Main {
 		Configuration.outputPath += "NormalFL/";
 		String suspiciousFileStr = Configuration.suspPositionsFilePath;
 		
-		String[] elements = bugIdStr.split("_");
+		String[] elements = bugIdStr.split("-");
 		String projectName = elements[0];
 		int bugId;
 		try {
