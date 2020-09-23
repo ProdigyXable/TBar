@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 public class MainPerfectFL {
 
     private static Logger log = LoggerFactory.getLogger(MainPerfectFL.class);
-    private static Granularity granularity = Granularity.File;
+    private static Granularity granularity = Granularity.Line;
 
     public static void main(String[] args) {
         if (args.length != 7) {
@@ -62,10 +62,6 @@ public class MainPerfectFL {
 
         TBarFixer fixer = new TBarFixer(bugDataPath, projectName, bugId, defects4jHome, pm, pt, pf);
 
-        if (fixer.proflEnabled) {
-            fixer.saveGeneralSbfl();
-        }
-
         fixer.dataType = "TBar";
         fixer.isTestFixPatterns = isTestFixPatterns;
         switch (granularity) {
@@ -85,10 +81,6 @@ public class MainPerfectFL {
         }
         fixer.metric = Configuration.faultLocalizationMetric;
         fixer.fixProcess();
-
-        if (fixer.proflEnabled) {
-            fixer.saveProflRanking();
-        }
 
         int fixedStatus = fixer.fixedStatus;
         switch (fixedStatus) {

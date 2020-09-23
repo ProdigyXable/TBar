@@ -52,10 +52,6 @@ public class Main {
 
         AbstractFixer fixer = new TBarFixer(bugDataPath, projectName, bugId, defects4jHome, proflMethod, proflTest, proflFailing);
 
-        if (fixer.proflEnabled) {
-            fixer.saveGeneralSbfl();
-        }
-
         fixer.dataType = "TBar";
         fixer.metric = Configuration.faultLocalizationMetric;
         fixer.suspCodePosFile = new File(suspiciousFileStr);
@@ -66,9 +62,6 @@ public class Main {
 
         fixer.fixProcess();
 
-        if (fixer.proflEnabled) {
-            fixer.saveProflRanking();
-        }
 
         int fixedStatus = fixer.fixedStatus;
         switch (fixedStatus) {
