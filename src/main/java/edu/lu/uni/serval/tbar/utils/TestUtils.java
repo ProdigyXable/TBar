@@ -1,18 +1,23 @@
 package edu.lu.uni.serval.tbar.utils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class TestUtils {
 
-    public static int getFailTestNumInProject(String projectName, String defects4jPath, List<String> failedTests) {
+    public static List<String> getFailTestNumInProject(String projectName, String defects4jPath, List<String> originallyFailedTests) {
+        List<String> result = new ArrayList<>();
         String testResult = getDefects4jResult(projectName, defects4jPath, "test");
+
         if (testResult.equals("")) {//error occurs in run
-            return Integer.MAX_VALUE;
+            // return Integer.MAX_VALUE;
+            return originallyFailedTests;
         }
         if (!testResult.contains("Failing tests:")) {
-            return Integer.MAX_VALUE;
+            // return Integer.MAX_VALUE;
+            return originallyFailedTests;
         }
         int errorNum = 0;
         String[] lines = testResult.trim().split("\n");
@@ -25,10 +30,10 @@ public class TestUtils {
             } else if (lineString.startsWith("Running ")) {
                 break;
             } else {
-                failedTests.add(lineString.trim());
+                result.add(lineString.trim());
             }
         }
-        return errorNum;
+        return result;
     }
 
 //	public static int getFailTestNumInProject(String buggyProject, List<String> failedTests, String classPath,

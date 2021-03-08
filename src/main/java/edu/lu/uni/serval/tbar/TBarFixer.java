@@ -116,11 +116,11 @@ public class TBarFixer extends AbstractFixer {
                 fixWithMatchedFixTemplates(scn, distinctContextInfo);
 
                 if (!isTestFixPatterns && minErrorTest == 0) {
-                    break;
+                    // break; // ENDS AFTER 1st CleanFix
                 }
             }
             if (!isTestFixPatterns && minErrorTest == 0) {
-                break;
+                // break; // ENDS AFTER 1st CleanFix
             }
         }
         log.info("=======StaticBugFixer: Finish off fixing======");
@@ -562,7 +562,7 @@ public class TBarFixer extends AbstractFixer {
             return;
         }
 
-        testGeneratedPatches(patchCandidates, scn);
+        testGeneratedPatches(patchCandidates, scn, ft.getClass().getName());
     }
 
     private List<Integer> readAllNodeTypes(ITree suspCodeAstNode) {

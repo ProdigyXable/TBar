@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -97,10 +98,14 @@ public abstract class AbstractFixer implements IFixer {
         if (FileHelper.getAllFiles(fullBuggyProjectPath + PathUtils.getSrcPath(buggyProject).get(0), ".class").isEmpty()) {
             TestUtils.compileProjectWithDefects4j(fullBuggyProjectPath, defects4jPath);
         }
-        minErrorTest = TestUtils.getFailTestNumInProject(fullBuggyProjectPath, defects4jPath, failedTestStrList);
+
+        failedTestStrList = TestUtils.getFailTestNumInProject(fullBuggyProjectPath, defects4jPath, failedTestStrList);
+
+        minErrorTest = failedTestStrList.size();
         if (minErrorTest == Integer.MAX_VALUE) {
             TestUtils.compileProjectWithDefects4j(fullBuggyProjectPath, defects4jPath);
-            minErrorTest = TestUtils.getFailTestNumInProject(fullBuggyProjectPath, defects4jPath, failedTestStrList);
+            failedTestStrList = TestUtils.getFailTestNumInProject(fullBuggyProjectPath, defects4jPath, failedTestStrList);
+            minErrorTest = failedTestStrList.size();
         }
 
         log.info(buggyProject + " Failed Tests: " + this.minErrorTest);
@@ -279,9 +284,10 @@ public abstract class AbstractFixer implements IFixer {
 
     protected List<Patch> triedPatchCandidates = new ArrayList<>();
 
-    protected void testGeneratedPatches(List<Patch> patchCandidates, SuspCodeNode scn) {
+    protected void testGeneratedPatches(List<Patch> patchCandidates, SuspCodeNode scn, String templateID) {
         // Testing generated patches.
         for (Patch patch : patchCandidates) {
+
             System.out.println("---------------- Testing New Patch ----------------");
             patch.buggyFileName = scn.suspiciousJavaFile;
             addPatchCodeToFile(scn, patch);// Insert the patch.
@@ -351,9 +357,8 @@ public abstract class AbstractFixer implements IFixer {
                 continue;
             }
 
-            List<String> failedTestsAfterFix = new ArrayList<>();
+            List<String> failedTestsAfterFix = TestUtils.getFailTestNumInProject(fullBuggyProjectPath, this.defects4jPath, this.failedTestStrList);
             // int errorTestAfterFix = TestUtils.getFailTestNumInProject(fullBuggyProjectPath, this.defects4jPath, failedTestsAfterFix);
-            TestUtils.getFailTestNumInProject(fullBuggyProjectPath, this.defects4jPath, failedTestsAfterFix);
             failedTestsAfterFix.removeAll(this.fakeFailedTestCasesList);
 
             int errorTestAfterFix = failedTestsAfterFix.size();
@@ -362,21 +367,34 @@ public abstract class AbstractFixer implements IFixer {
 
             // PROFL-SPECIFIC-START
             if (this.proflEnabled) {
-                Set<String> ff = new TreeSet();
-                Set<String> fp = new TreeSet(failedTestCasesStrList);
+                // this.failedTestCasesStrList
+                Set<String> ff = new TreeSet(this.failedTestCasesStrList);
+                Set<String> fp = new TreeSet();
                 Set<String> pf = new TreeSet();
                 Set<String> pp = new TreeSet();
 
-                for (String failingTest : failedTestsAfterFix) {
-                    failingTest = failingTest.replace("- ", "").trim();
-                    if (this.failedTestCasesStrList.contains(failingTest)) {
-                        log.info(String.format("Fail->Fail test case ->%s", failingTest));
-                        ff.add(failingTest);
+                for (String failingTestBefore : failedTestCasesStrList) {
+                    String failingTestBeforeUnified = String.format("- %s", failingTestBefore);
 
-                        fp.remove(failingTest);
+                    if (failedTestsAfterFix.contains(failingTestBeforeUnified)) {
+                        System.out.println(String.format("Fail->Fail [A] test case ->%s", failingTestBefore));
+                        ff.add(failingTestBefore);
                     } else {
-                        log.info(String.format("Pass->Fail test case ->%s", failingTest));
-                        pf.add(failingTest);
+                        System.out.println(String.format("Fail->Pass test case ->%s", failingTestBefore));
+                        ff.remove(failingTestBefore);
+                        fp.add(failingTestBefore);
+                    }
+                }
+
+                for (String failingTestAfter : failedTestsAfterFix) {
+                    failingTestAfter = failingTestAfter.replace("- ", "").trim();
+
+                    if (this.failedTestCasesStrList.contains(failingTestAfter)) {
+                        System.out.println(String.format("Fail->Fail [B] test case ->%s", failingTestAfter));
+                        ff.add(failingTestAfter);
+                    } else {
+                        System.out.println(String.format("Pass->Fail test case ->%s", failingTestAfter));
+                        pf.add(failingTestAfter);
                     }
                 }
 
@@ -433,8 +451,8 @@ public abstract class AbstractFixer implements IFixer {
                     proflRanking.addCategoryEntry(pc, m);
 
                     saveProflInfo();
-                    savePatchInfo(patch, qualifiedName, mutatedMethod, scn);
-                    saveTestInfo(ff, fp, pf, qualifiedName, mutatedMethod, pc);
+                    savePatchInfo(patch, qualifiedName, mutatedMethod, scn, templateID);
+                    saveTestInfo(ff, fp, pf, qualifiedName, mutatedMethod, pc, templateID);
 
                 }
 
@@ -606,12 +624,13 @@ public abstract class AbstractFixer implements IFixer {
         this.writeListToFile(this.proflRanking.outputProflCatInfo(), new File(String.format("tbar-output/%s/category_information.profl", this.buggyProject)));
     }
 
-    private void savePatchInfo(Patch patch, String qualifiedName, String mutatedMethod, SuspCodeNode scn) {
+    private void savePatchInfo(Patch patch, String qualifiedName, String mutatedMethod, SuspCodeNode scn, String templateID) {
         Collection<String> messages = new LinkedList();
 
         messages.add(String.format("Class name: %s", qualifiedName));
         messages.add(String.format("Modified method: %s", mutatedMethod));
         messages.add(String.format("Modified line: %d", scn.buggyLine));
+        messages.add(String.format("Fix template name: %s", templateID));
         messages.add("----------------");
 
         messages.addAll(Arrays.asList(patch.getFixedCodeStr1().split("\n")));
@@ -623,11 +642,19 @@ public abstract class AbstractFixer implements IFixer {
         this.writeListToFile(messages, new File(String.format("tbar-output/%s/patches/%d.patch", this.buggyProject, this.patchAttempts)));
     }
 
-    private void saveTestInfo(Set<String> ff, Set<String> fp, Set<String> pf, String qualifiedName, String mutatedMethod, PatchCategory pc) {
+    private void saveTestInfo(Set<String> ff, Set<String> fp, Set<String> pf, String qualifiedName, String mutatedMethod, PatchCategory pc, String templateID) {
         Collection<String> messages = new LinkedList();
         messages.add(String.format("ff=%d, fp=%d, pf=%d, pp=Unknown", ff.size(), fp.size(), pf.size()));
         messages.add(String.format("Patch Category: %s", pc.getCategoryName()));
         messages.add(String.format("Modified method: %s", mutatedMethod));
+        messages.add(String.format("Fix template name: %s", templateID));
+
+        if (!Collections.disjoint(ff, fp) || !Collections.disjoint(ff, pf) || !Collections.disjoint(pf, fp)) {
+            System.out.println("OVERLAPPING TESTS");
+            messages.add(String.format("OVERLAPPING TESTS"));
+            System.exit(-7);
+        }
+
         messages.add("----------------");
 
         for (String s : ff) {

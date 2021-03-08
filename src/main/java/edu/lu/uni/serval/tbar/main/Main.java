@@ -13,10 +13,6 @@ import java.io.File;
  */
 public class Main {
 
-    public String proflMethod = "";
-    public String proflTest = "";
-    public String proflFailing = "";
-
     public static void main(String[] args) {
         if (args.length != 6) {
             System.err.println("Arguments [PROFL-BASED]: \n"
