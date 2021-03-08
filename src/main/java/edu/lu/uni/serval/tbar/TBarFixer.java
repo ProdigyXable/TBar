@@ -47,6 +47,13 @@ public class TBarFixer extends AbstractFixer {
         FL
     }
 
+    private boolean endEarly() {
+        if (!isTestFixPatterns && this.minErrorTest == 0) {
+            // return true;
+        }
+
+        return false;
+    }
     private static Logger log = LoggerFactory.getLogger(TBarFixer.class);
 
     public TBarFixer(String path, String projectName, int bugId, String defects4jPath, String pm, String pt, String pf) {
@@ -115,12 +122,12 @@ public class TBarFixer extends AbstractFixer {
                 // Match fix templates for this suspicious code with its context information.
                 fixWithMatchedFixTemplates(scn, distinctContextInfo);
 
-                if (!isTestFixPatterns && minErrorTest == 0) {
-                    // break; // ENDS AFTER 1st CleanFix
+                if (endEarly()) {
+                    break;
                 }
             }
-            if (!isTestFixPatterns && minErrorTest == 0) {
-                // break; // ENDS AFTER 1st CleanFix
+            if (endEarly()) {
+                break;
             }
         }
         log.info("=======StaticBugFixer: Finish off fixing======");
@@ -311,7 +318,7 @@ public class TBarFixer extends AbstractFixer {
 
                     if (!typeChanged) {
                         generateAndValidatePatches(ft, scn);
-                        if (!isTestFixPatterns && this.minErrorTest == 0) {
+                        if (endEarly()) {
                             return;
                         }
                         typeChanged = true;
@@ -340,7 +347,7 @@ public class TBarFixer extends AbstractFixer {
                             dataType = readDirectory() + "/OperatorMutator";
                         }
                         generateAndValidatePatches(ft, scn);
-                        if (!isTestFixPatterns && this.minErrorTest == 0) {
+                        if (endEarly()) {
                             return;
                         }
                     }
@@ -367,7 +374,7 @@ public class TBarFixer extends AbstractFixer {
                         dataType = readDirectory() + "/ICASTIdivCastToDouble";
                     }
                     generateAndValidatePatches(ft, scn);
-                    if (!isTestFixPatterns && this.minErrorTest == 0) {
+                    if (endEarly()) {
                         return;
                     }
 
@@ -378,7 +385,7 @@ public class TBarFixer extends AbstractFixer {
                             dataType = readDirectory() + "/OperatorMutator";
                         }
                         generateAndValidatePatches(ft, scn);
-                        if (!isTestFixPatterns && this.minErrorTest == 0) {
+                        if (endEarly()) {
                             return;
                         }
                     }
@@ -388,7 +395,7 @@ public class TBarFixer extends AbstractFixer {
                         dataType = readDirectory() + "/ConditionalExpressionMutator";
                     }
                     generateAndValidatePatches(ft, scn);
-                    if (!isTestFixPatterns && this.minErrorTest == 0) {
+                    if (endEarly()) {
                         return;
                     }
 
@@ -413,7 +420,7 @@ public class TBarFixer extends AbstractFixer {
                     if (Checker.isMethodInvocation(contextInfo)) {
                         if (ft != null) {
                             generateAndValidatePatches(ft, scn);
-                            if (!isTestFixPatterns && this.minErrorTest == 0) {
+                            if (endEarly()) {
                                 return;
                             }
                         }
@@ -422,7 +429,7 @@ public class TBarFixer extends AbstractFixer {
                             dataType = readDirectory() + "/NPEqualsShouldHandleNullArgument";
                         }
                         generateAndValidatePatches(ft, scn);
-                        if (!isTestFixPatterns && this.minErrorTest == 0) {
+                        if (endEarly()) {
                             return;
                         }
 
@@ -467,9 +474,10 @@ public class TBarFixer extends AbstractFixer {
 
                     if (!nullChecked) {
                         generateAndValidatePatches(ft, scn);
-                        if (!isTestFixPatterns && this.minErrorTest == 0) {
+                        if (endEarly()) {
                             return;
                         }
+
                         nullChecked = true;
                         ft = new NullPointerChecker();
                         if (isTestFixPatterns) {
@@ -479,7 +487,7 @@ public class TBarFixer extends AbstractFixer {
                 }
                 if (ft != null) {
                     generateAndValidatePatches(ft, scn);
-                    if (!isTestFixPatterns && this.minErrorTest == 0) {
+                    if (endEarly()) {
                         return;
                     }
                 }
@@ -493,7 +501,7 @@ public class TBarFixer extends AbstractFixer {
                     dataType = readDirectory() + "/NullPointerChecker";
                 }
                 generateAndValidatePatches(ft, scn);
-                if (!isTestFixPatterns && this.minErrorTest == 0) {
+                if (endEarly()) {
                     return;
                 }
             }
@@ -503,7 +511,7 @@ public class TBarFixer extends AbstractFixer {
                 dataType = readDirectory() + "/StatementMover";
             }
             generateAndValidatePatches(ft, scn);
-            if (!isTestFixPatterns && this.minErrorTest == 0) {
+            if (endEarly()) {
                 return;
             }
 
@@ -512,7 +520,7 @@ public class TBarFixer extends AbstractFixer {
                 dataType = readDirectory() + "/StatementRemover";
             }
             generateAndValidatePatches(ft, scn);
-            if (!isTestFixPatterns && this.minErrorTest == 0) {
+            if (endEarly()) {
                 return;
             }
 
@@ -521,7 +529,7 @@ public class TBarFixer extends AbstractFixer {
                 dataType = readDirectory() + "/StatementInserter";
             }
             generateAndValidatePatches(ft, scn);
-            if (!isTestFixPatterns && this.minErrorTest == 0) {
+            if (endEarly()) {
                 return;
             }
         } else {
@@ -530,7 +538,7 @@ public class TBarFixer extends AbstractFixer {
                 dataType = readDirectory() + "/StatementRemover";
             }
             generateAndValidatePatches(ft, scn);
-            if (!isTestFixPatterns && this.minErrorTest == 0) {
+            if (endEarly()) {
                 return;
             }
         }
